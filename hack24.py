@@ -24,4 +24,4 @@ else:
         frame_window.image(frame_rgb)                           #release the video
 
 camera.release()                                                #free up resource after using camera
-camera.destroyAllWindows()                                      #closes all camera
+cv2.destroyAllWindows()                                      #closes all camera
