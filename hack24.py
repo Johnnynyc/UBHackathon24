@@ -5,12 +5,12 @@ import mediapipe as mp
 
 # Set up Mediapipe hand detection
 mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
+##mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
 hands = mp_hands.Hands()
 
-st.title('Streamlit OpenCV Camera Feed')
+st.title('Welcome to our AnyDraw')
 
 frame_window = st.image([])
 camera_running = False
@@ -29,8 +29,8 @@ if(st.button('Start Game', key="start_button")) and not camera_running:
             stop_camera(camera)
             st.write("Game has been stopped") 
 
-    if not camera.isOpened():
-        st.error("Unable to access the camera. PLEASE CHECK PERMISSIONS!!")
+    ##if not camera.isOpened():
+       ## st.error("Unable to access the camera. PLEASE CHECK PERMISSIONS!!")
     
     else:
         while camera_running:
