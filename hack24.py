@@ -5,49 +5,59 @@ import mediapipe as mp
 
 # Set up Mediapipe hand detection
 mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
-
 hands = mp_hands.Hands()
 
-st.title('Streamlit OpenCV Camera Feed')
+st.set_page_config(layout="wide")
 
-frame_window = st.image([])
-camera_running = False
+st.title('Streamlit OpenCV Camera Feed')
 
 def stop_camera(camera):
     camera.release()                            #free up resource after using camera
     cv2.destroyAllWindows()                     #closes all camera
     
-if(st.button('Start Game', key="start_button")) and not camera_running:
-    camera_running = True
-    camera = cv2.VideoCapture(1) 
-    
-    if(camera.isOpened()):
-        if(st.button('Stop Game', key="stop_button")):
-            camera_running = False
-            stop_camera(camera)
-            st.write("Game has been stopped") 
+col1, col2 = st.columns([1, 1])                 #50, 50 split on the columns
 
-    if not camera.isOpened():
-        st.error("Unable to access the camera. PLEASE CHECK PERMISSIONS!!")
+with col1:
+    frame_window = st.image([])
+    camera_running = False
     
-    else:
-        while camera_running:
-            
-            ret, frame = camera.read()      #ret checks if frame was successfully captured 
+    if(st.button('Start Game', key="start_button")) and not camera_running:
+        camera_running = True
+        camera = cv2.VideoCapture(1) 
+        
+        if(camera.isOpened()):
+            with col2:
+                blank_canvas = np.ones((700, 900, 3), dtype=np.uint8) * 255             #height, width
+                st.image(blank_canvas, caption = "Blank Canvas", use_container_width=True)
+                
+            if(st.button('Stop Game', key="stop_button")):                              #stop button clicked
+                camera_running = False
+                stop_camera(camera)
+                st.write("Game has been stopped") 
 
-            if not ret:
-                st.error("Failed to grab frame.")
-                break
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)      #convert BGR to standard RGB
-            frame_rgb = cv2.flip(frame_rgb, 1)
-            results = hands.process(frame_rgb)
+        if not camera.isOpened():
+            st.error("Unable to access the camera. PLEASE CHECK PERMISSIONS!!")         #error checking, if cam is not on
+        
+        else:
+            while camera_running:
+                ret, frame = camera.read()      #ret checks if frame was successfully captured 
+
+                if not ret:
+                    st.error("Failed to grab frame.")           #if failed = frame was not read
+                    break
+                
+                frame_resized = cv2.resize(frame, (900, 700))                   #adjust frame size
+                frame_rgb = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2RGB)      #convert BGR to standard RGB
+                frame_rgb = cv2.flip(frame_rgb, 1)                              #flip camera
+                results = hands.process(frame_rgb)
+                
+                if results.multi_hand_landmarks:
+                    for hand_landmarks in results.multi_hand_landmarks:
+                        mp_drawing.draw_landmarks(frame_rgb, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+                
+                frame_window.image(frame_rgb)                           #release the video
+                
             
-            if results.multi_hand_landmarks:
-                for hand_landmarks in results.multi_hand_landmarks:
-                    mp_drawing.draw_landmarks(frame_rgb, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-            
-            frame_window.image(frame_rgb)                           #release the video
 
 
